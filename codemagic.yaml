@@ -6,8 +6,7 @@ workflows:
       java: 17
 
     scripts:
-      - chmod +x ./gradlew || true
-      - ./gradlew assembleDebug
+      - gradle assembleDebug
 
     artifacts:
       - app/build/outputs/**/*.apk
