@@ -1,0 +1,6 @@
+{
+  "name": "Prism Studio: Aesthetic Themes",
+  "description": "Prism Studio is a premium aesthetic theme customizer for personalizing custom widgets, beautiful wallpaper schemes, dynamic color palettes, and matching icon styles.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

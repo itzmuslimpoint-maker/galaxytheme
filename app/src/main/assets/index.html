@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Cosmic Live Theme</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: radial-gradient(circle at center, #1b1d30 0%, #0b0c15 100%);
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            pointer-events: none;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: 0.15rem;
+            color: #00e5ff;
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+            margin-bottom: 0.5rem;
+            animation: pulse 3s infinite alternate;
+        }
+        p {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.05rem;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.98); opacity: 0.8; }
+            100% { transform: scale(1.02); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stars"></canvas>
+    <div class="container">
+        <h1>Cosmic Live</h1>
+        <p>Interactive Particle Theme Preview</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('stars');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const stars = [];
+        const numStars = 80;
+
+        class Star {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.15;
+                this.speedY = (Math.random() - 0.5) * 0.15;
+                this.alpha = Math.random();
+                this.alphaSpeed = Math.random() * 0.01 + 0.005;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.alpha += this.alphaSpeed;
+
+                if (this.alpha > 1 || this.alpha < 0) {
+                    this.alphaSpeed = -this.alphaSpeed;
+                }
+
+                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 229, 255, ${this.alpha})`;
+                ctx.shadowBlur = this.size * 3;
+                ctx.shadowColor = '#00e5ff';
+                ctx.fill();
+            }
+        }
+
+        // Initialize
+        for (let i = 0; i < numStars; i++) {
+            stars.push(new Star());
+        }
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        // Touch event to spawn pulse stars
+        document.body.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            for (let i = 0; i < 5; i++) {
+                const s = new Star();
+                s.x = touch.clientX;
+                s.y = touch.clientY;
+                s.size = Math.random() * 4 + 1;
+                s.speedX = (Math.random() - 0.5) * 1.5;
+                s.speedY = (Math.random() - 0.5) * 1.5;
+                s.alpha = 1;
+                stars.push(s);
+                if (stars.length > 200) stars.shift();
+            }
+        });
+
+        // Loop
+        function animate() {
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'rgba(11, 12, 21, 0.2)'; // trail effect
+            ctx.fillRect(0, 0, width, height);
+
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
