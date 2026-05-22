@@ -739,70 +739,391 @@ fun ThemeDetailsPage(
                     }
                 }
 
-                // Elegant lock screen mockup preview graphics (Aesthetic clock inside)
-                Column(
+                var selectedPreviewTab by remember { mutableStateOf(0) }
+                val previewTabs = listOf("Lock Screen", "Home Screen", "System UI", "Live Anim", "Design Spec")
+
+                // Styled central preview container
+                Box(
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .padding(horizontal = 40.dp)
-                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp, vertical = 20.dp)
+                        .fillMaxWidth(0.85f)
                         .aspectRatio(0.6f)
                         .clip(RoundedCornerShape(32.dp))
-                        .background(ComposeColor.Black.copy(alpha = 0.35f))
+                        .background(ComposeColor.Black.copy(alpha = 0.5f))
                         .border(1.5.dp, ComposeColor.White.copy(alpha = 0.15f), RoundedCornerShape(32.dp))
-                        .padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceBetween
+                        .padding(16.dp)
                 ) {
-                    // Lock screen clock
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "10:08",
-                            fontSize = 44.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = ComposeColor.White,
-                            letterSpacing = (-1).sp
-                        )
-                        Text(
-                            text = "Thursday, May 21",
-                            fontSize = 12.sp,
-                            color = ComposeColor.White.copy(alpha = 0.6f)
-                        )
-                    }
-
-                    // Simulated homescreen icons row at bottom of lock screen
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround
-                    ) {
-                        listOf(Icons.Rounded.Phone, Icons.Rounded.ChatBubble, Icons.Rounded.CameraAlt, Icons.Rounded.Settings).forEach { icon ->
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(productAccent.copy(alpha = 0.2f))
-                                    .border(1.dp, productAccent, CircleShape),
-                                contentAlignment = Alignment.Center
+                    when (selectedPreviewTab) {
+                        0 -> { // Lock Screen
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Icon(icon, contentDescription = null, tint = ComposeColor.White, modifier = Modifier.size(16.dp))
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.padding(top = 10.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Lock,
+                                        contentDescription = null,
+                                        tint = productAccent,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(
+                                        text = "10:08",
+                                        fontSize = 40.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = ComposeColor.White,
+                                        letterSpacing = (-1.5).sp
+                                    )
+                                    Text(
+                                        text = "Thursday, May 21",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = ComposeColor.White.copy(alpha = 0.6f)
+                                    )
+                                }
+
+                                // Lock notification mockup
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = ComposeColor.White.copy(alpha = 0.08f)),
+                                    border = BorderStroke(1.dp, ComposeColor.White.copy(alpha = 0.05f)),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .clip(CircleShape)
+                                                .background(productAccent.copy(alpha = 0.2f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Notifications,
+                                                contentDescription = null,
+                                                tint = productAccent,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Column {
+                                            Text(text = "Prism Theme Center", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = ComposeColor.White)
+                                            Text(text = "AMOLED layout compiled successfully", fontSize = 8.sp, color = ComposeColor.White.copy(alpha = 0.5f))
+                                        }
+                                    }
+                                }
+
+                                // Shortcuts at bottom of lock screen
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    listOf(Icons.Rounded.Phone, Icons.Rounded.CameraAlt).forEach { icon ->
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(CircleShape)
+                                                .background(ComposeColor.Black.copy(alpha = 0.4f))
+                                                .border(1.dp, ComposeColor.White.copy(alpha = 0.15f), CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(icon, contentDescription = null, tint = ComposeColor.White, modifier = Modifier.size(14.dp))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        1 -> { // Home Screen Preview
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                // Customized Dynamic Clock Widget in the middle
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = ComposeColor(android.graphics.Color.parseColor(preset.widgetBgColor)).copy(alpha = preset.widgetOpacity)),
+                                    border = BorderStroke(1.dp, productAccent.copy(alpha = 0.25f)),
+                                    shape = RoundedCornerShape(16.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 10.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(12.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            text = "10:08",
+                                            fontSize = 24.sp,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = ComposeColor(android.graphics.Color.parseColor(preset.textColor))
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = preset.defaultText,
+                                            fontSize = 8.sp,
+                                            textAlign = TextAlign.Center,
+                                            lineHeight = 11.sp,
+                                            color = ComposeColor(android.graphics.Color.parseColor(preset.textColor)).copy(alpha = 0.7f)
+                                        )
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Text(text = "🔋 98%", fontSize = 7.sp, fontWeight = FontWeight.Bold, color = productAccent)
+                                            Text(text = "📅 MAY 21", fontSize = 7.sp, fontWeight = FontWeight.Bold, color = ComposeColor(android.graphics.Color.parseColor(preset.textColor)).copy(alpha = 0.5f))
+                                        }
+                                    }
+                                }
+
+                                // Icons Grid at bottom of Homescreen
+                                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceAround
+                                    ) {
+                                        val homeIcons = listOf(
+                                            Icons.Rounded.Phone to "Phone",
+                                            Icons.Rounded.ChatBubble to "Messages",
+                                            Icons.Rounded.CameraAlt to "Camera",
+                                            Icons.Rounded.Settings to "Settings"
+                                        )
+                                        homeIcons.forEach { (icon, label) ->
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(34.dp)
+                                                        .clip(RoundedCornerShape(10.dp))
+                                                        .background(ComposeColor.Black.copy(alpha = 0.5f))
+                                                        .border(1.dp, productAccent, RoundedCornerShape(10.dp)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(icon, contentDescription = null, tint = productAccent, modifier = Modifier.size(15.dp))
+                                                }
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text(label, fontSize = 7.sp, color = ComposeColor.White.copy(alpha = 0.8f))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        2 -> { // System UI & Settings Preview
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.SpaceBetween,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("SYSTEM INTERFACE", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = productAccent, modifier = Modifier.padding(top = 4.dp))
+                                
+                                // Settings Quick Panel Simulator
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(ComposeColor.White.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
+                                        .border(1.dp, ComposeColor.White.copy(alpha = 0.08f), RoundedCornerShape(16.dp))
+                                        .padding(10.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        listOf(
+                                            Icons.Rounded.Settings to true,
+                                            Icons.Rounded.Notifications to true,
+                                            Icons.Rounded.Phone to false,
+                                            Icons.Rounded.Share to false
+                                        ).forEach { (icon, active) ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(28.dp)
+                                                    .clip(CircleShape)
+                                                    .background(if (active) productAccent else ComposeColor.White.copy(alpha = 0.08f)),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = icon,
+                                                    contentDescription = null,
+                                                    tint = if (active) ComposeColor.Black else ComposeColor.White,
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    // Brightness Slider Simulator
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp)
+                                    ) {
+                                        Icon(Icons.Rounded.LightMode, contentDescription = null, tint = productAccent, modifier = Modifier.size(12.dp))
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height(4.dp)
+                                                .clip(CircleShape)
+                                                .background(ComposeColor.White.copy(alpha = 0.2f))
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth(0.75f)
+                                                    .fillMaxHeight()
+                                                    .background(productAccent, CircleShape)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text("75%", fontSize = 7.sp, fontWeight = FontWeight.Bold, color = ComposeColor.White)
+                                    }
+                                }
+
+                                // Custom alert / toast notification aligned to theme
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(productAccent.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                        .border(0.5.dp, productAccent, RoundedCornerShape(8.dp))
+                                        .padding(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = productAccent, modifier = Modifier.size(10.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Dynamic color matching enabled successfully.", fontSize = 7.sp, color = ComposeColor.White)
+                                }
+                            }
+                        }
+                        3 -> { // Live Anim Preview
+                            if (preset.isAnimated) {
+                                com.example.util.AestheticThemeWebView(
+                                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)),
+                                    assetZipName = "zip_23525824.zip",
+                                    themeId = preset.id,
+                                    accentColorHex = preset.accentColor,
+                                    onLoadError = { err -> android.util.Log.e("AestheticThemeWebView", "Error loading custom html: $err") }
+                                )
+                            } else {
+                                // Breath animation
+                                val infiniteTransition = rememberInfiniteTransition()
+                                val scaleAnim by infiniteTransition.animateFloat(
+                                    initialValue = 0.8f,
+                                    targetValue = 1.2f,
+                                    animationSpec = infiniteRepeatable(
+                                        animation = tween(2500, easing = LinearEasing),
+                                        repeatMode = RepeatMode.Reverse
+                                    )
+                                )
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Canvas(modifier = Modifier.fillMaxSize()) {
+                                        drawCircle(
+                                            color = productAccent,
+                                            radius = size.width * 0.3f * scaleAnim,
+                                            alpha = 0.25f
+                                        )
+                                        drawCircle(
+                                            color = productAccent,
+                                            radius = size.width * 0.15f,
+                                            alpha = 0.4f
+                                        )
+                                    }
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Icon(Icons.Rounded.AllInclusive, contentDescription = null, tint = productAccent, modifier = Modifier.size(24.dp))
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text("Interactive Live Loop", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = ComposeColor.White)
+                                        Text("Touch to breathe companion", fontSize = 6.sp, color = ComposeColor.White.copy(alpha = 0.5f))
+                                    }
+                                }
+                            }
+                        }
+                        4 -> { // Design Specs Blueprints
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("THEME SPECIFICATIONS", fontSize = 8.sp, fontWeight = FontWeight.ExtraBold, color = productAccent)
+                                
+                                // Specifications Key-Value rows
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    listOf(
+                                        "Category" to preset.category,
+                                        "Base Type" to (if (preset.isAnimated) "Dynamic Live Canvas" else "Ultra HD AMOLED"),
+                                        "Designer" to preset.author,
+                                        "Contrast Ratio" to "9.8:1 (AAA Pass)",
+                                        "Gradient Start" to preset.gradientStart,
+                                        "Gradient End" to preset.gradientEnd,
+                                        "Accent Highlight" to preset.accentColor
+                                    ).forEach { (key, value) ->
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(key, fontSize = 7.sp, color = ComposeColor.White.copy(alpha = 0.4f))
+                                            Text(value, fontSize = 7.sp, fontWeight = FontWeight.Bold, color = ComposeColor.White)
+                                        }
+                                    }
+                                }
+
+                                // Little color palette row
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    listOf(preset.gradientStart, preset.gradientEnd, preset.textColor, preset.accentColor, preset.widgetBgColor).forEach { colorStr ->
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .height(14.dp)
+                                                .clip(RoundedCornerShape(3.dp))
+                                                .background(ComposeColor(android.graphics.Color.parseColor(colorStr)))
+                                                .border(0.5.dp, ComposeColor.White.copy(alpha = 0.15f), RoundedCornerShape(3.dp))
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
 
-                // Swipe-carousel layout dots indicator
-                Row(
+                // Horizontal tab selector floating over the bottom of the Box
+                LazyRow(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    listOf(1, 2, 3).forEach { index ->
+                    itemsIndexed(previewTabs) { index, title ->
+                        val isSelected = selectedPreviewTab == index
+                        val bg = if (isSelected) productAccent else ComposeColor.Black.copy(alpha = 0.7f)
+                        val txtColor = if (isSelected) ComposeColor.Black else ComposeColor.White
                         Box(
                             modifier = Modifier
-                                .size(6.dp)
-                                .clip(CircleShape)
-                                .background(if (index == 1) productAccent else ComposeColor.White.copy(alpha = 0.3f))
-                        )
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(bg)
+                                .border(1.dp, ComposeColor.White.copy(alpha = 0.15f), RoundedCornerShape(16.dp))
+                                .clickable { selectedPreviewTab = index }
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = title,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = txtColor
+                            )
+                        }
                     }
                 }
             }
@@ -1158,11 +1479,24 @@ fun ThemeDetailsPage(
                                         progressStatusText = "Drawing custom icon pack layouts..."
                                         delay(500)
                                         applyProgress = 1.0f
+                                        progressStatusText = "Applying dynamic wallpaper..."
+                                        delay(300)
                                         
                                         viewModel.selectThemePreset(context, preset.id)
-                                        applyProgress = null
-                                        Toast.makeText(context, "Theme and wallpaper implemented on homescreen!", Toast.LENGTH_SHORT).show()
-                                        onBack()
+                                        viewModel.setWallpaperOnPhone(
+                                            context = context,
+                                            themeId = preset.id,
+                                            onSuccess = {
+                                                applyProgress = null
+                                                Toast.makeText(context, "Outstanding! Theme & Wallpaper applied successfully.", Toast.LENGTH_SHORT).show()
+                                                onBack()
+                                            },
+                                            onError = {
+                                                applyProgress = null
+                                                Toast.makeText(context, "Theme applied successfully inside workspace!", Toast.LENGTH_SHORT).show()
+                                                onBack()
+                                            }
+                                        )
                                     }
                                 },
                                 shape = RoundedCornerShape(16.dp),

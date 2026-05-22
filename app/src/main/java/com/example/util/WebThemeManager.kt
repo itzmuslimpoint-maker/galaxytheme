@@ -490,7 +490,7 @@ fun AestheticThemeWebView(
                                     }
                                 }
                             }
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
                             Log.e("AestheticThemeWebView", "Critical: Failed to initialize WebView subsystem (e.g. missing or corrupted system WebView package). Fallback to standard view container.", e)
                             onLoadError("WebView initialization failed: ${e.localizedMessage}")
                             android.view.View(ctx) // fallback static safe container
@@ -531,7 +531,7 @@ fun AestheticThemeWebView(
                                     Log.d("AestheticThemeWebView", "[INTEROP_UPDATE] Webview update bypassed (already loaded): $resolvedUrl")
                                 }
                             }
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
                             Log.e("AestheticThemeWebView", "[INTEROP_UPDATE] Exception during webView update processing", e)
                         }
                     },
@@ -539,17 +539,33 @@ fun AestheticThemeWebView(
                         try {
                             val webView = view as? WebView
                             if (webView != null) {
-                                Log.d("AestheticThemeWebView", "[LIFECYCLE] onRelease: Safely cleaning up WebView instance...")
-                                webView.stopLoading()
-                                webView.clearHistory()
-                                webView.removeAllViews()
-                                webView.webViewClient = WebViewClient()
-                                webView.webChromeClient = null
-                                (webView.parent as? ViewGroup)?.removeView(webView)
-                                webView.destroy()
+                                Log.d("AestheticThemeWebView", "[LIFECYCLE] onRelease: Deferring safe cleanup of WebView instance...")
+                                webView.post {
+                                    try {
+                                        webView.stopLoading()
+                                    } catch (t: Throwable) {}
+                                    try {
+                                        webView.clearHistory()
+                                    } catch (t: Throwable) {}
+                                    try {
+                                        webView.removeAllViews()
+                                    } catch (t: Throwable) {}
+                                    try {
+                                        webView.webViewClient = WebViewClient()
+                                    } catch (t: Throwable) {}
+                                    try {
+                                        webView.webChromeClient = null
+                                    } catch (t: Throwable) {}
+                                    try {
+                                        (webView.parent as? ViewGroup)?.removeView(webView)
+                                    } catch (t: Throwable) {}
+                                    try {
+                                        webView.destroy()
+                                    } catch (t: Throwable) {}
+                                }
                             }
-                        } catch (e: Exception) {
-                            Log.e("AestheticThemeWebView", "[LIFECYCLE] Exception during WebView teardown in onRelease", e)
+                        } catch (e: Throwable) {
+                            Log.e("AestheticThemeWebView", "[LIFECYCLE] Throwable during WebView teardown in onRelease", e)
                         }
                     }
                 )

@@ -98,7 +98,12 @@ class ThemeViewModel(private val repository: ThemeRepository) : ViewModel() {
     fun setWallpaperOnPhone(context: Context, themeId: String, onSuccess: () -> Unit, onError: () -> Unit) {
         viewModelScope.launch {
             val success = withContext(Dispatchers.IO) {
-                ThemePresets.applySystemWallpaper(context.applicationContext, themeId)
+                try {
+                    ThemePresets.applySystemWallpaper(context.applicationContext, themeId)
+                } catch (t: Throwable) {
+                    android.util.Log.e("ThemeViewModel", "Error inside background applySystemWallpaper call", t)
+                    false
+                }
             }
             if (success) {
                 onSuccess()
