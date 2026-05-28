@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Cosmic Live Theme</title>
+    <title>English AI Speaking Agent</title>
     <style>
         * {
             margin: 0;
@@ -11,151 +11,721 @@
             box-sizing: border-box;
             user-select: none;
         }
+
         body {
-            background: radial-gradient(circle at center, #1b1d30 0%, #0b0c15 100%);
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            padding: 20px;
+            overflow-y: auto;
         }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        .container {
-            position: relative;
-            z-index: 2;
+
+        .header {
             text-align: center;
-            pointer-events: none;
+            margin-bottom: 20px;
+            margin-top: 10px;
         }
-        h1 {
-            font-size: 2rem;
-            font-weight: 300;
-            letter-spacing: 0.15rem;
+
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
             color: #00e5ff;
             text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
-            margin-bottom: 0.5rem;
-            animation: pulse 3s infinite alternate;
+            margin-bottom: 5px;
         }
-        p {
+
+        .header p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 420px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 45vh;
+            padding-right: 6px;
+            margin-bottom: 12px;
+        }
+
+        .messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: rgba(0, 229, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            padding: 12px 16px;
+            border-radius: 16px;
             font-size: 0.9rem;
-            font-weight: 400;
-            color: rgba(255, 255, 255, 0.5);
-            letter-spacing: 0.05rem;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
         }
-        @keyframes pulse {
-            0% { transform: scale(0.98); opacity: 0.8; }
-            100% { transform: scale(1.02); opacity: 1; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.ai {
+            background: rgba(0, 229, 255, 0.08);
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            border-bottom-left-radius: 4px;
+            color: #e0f7fa;
+        }
+
+        .message.user {
+            background: rgba(124, 77, 255, 0.12);
+            border: 1px solid rgba(124, 77, 255, 0.2);
+            border-bottom-right-radius: 4px;
+            margin-left: 30px;
+            color: #ede7f6;
+        }
+
+        .message .label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            margin-bottom: 4px;
+            opacity: 0.7;
+        }
+
+        .message.ai .label { color: #00e5ff; }
+        .message.user .label { color: #b388ff; }
+
+        .input-area {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-area input:focus {
+            border-color: rgba(0, 229, 255, 0.4);
+        }
+
+        .input-area input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, #00e5ff, #00b8d4);
+            color: #000;
+        }
+
+        .btn-send:active {
+            transform: scale(0.92);
+        }
+
+        .btn-mic {
+            background: linear-gradient(135deg, #7c4dff, #651fff);
+            color: #fff;
+        }
+
+        .btn-mic.listening {
+            background: linear-gradient(135deg, #ff1744, #d50000);
+            animation: pulse-mic 1s infinite;
+        }
+
+        @keyframes pulse-mic {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(255, 23, 68, 0); }
+        }
+
+        .voice-settings {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .voice-settings h3 {
+            font-size: 0.85rem;
+            color: #00e5ff;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .setting-row label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .setting-row input[type="range"] {
+            width: 55%;
+            accent-color: #00e5ff;
+            height: 4px;
+        }
+
+        .setting-row select {
+            width: 60%;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+            font-size: 0.78rem;
+            outline: none;
+        }
+
+        .setting-row select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .setting-row .value-display {
+            font-size: 0.75rem;
+            color: #00e5ff;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .speaking-indicator {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: rgba(0, 229, 255, 0.08);
+            border-radius: 20px;
+            margin-bottom: 10px;
+            font-size: 0.75rem;
+            color: #00e5ff;
+        }
+
+        .speaking-indicator.active {
+            display: inline-flex;
+        }
+
+        .speaking-indicator .wave {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+        }
+
+        .speaking-indicator .wave span {
+            width: 3px;
+            height: 12px;
+            background: #00e5ff;
+            border-radius: 2px;
+            animation: wave-anim 0.8s ease-in-out infinite;
+        }
+
+        .speaking-indicator .wave span:nth-child(2) { animation-delay: 0.1s; }
+        .speaking-indicator .wave span:nth-child(3) { animation-delay: 0.2s; }
+        .speaking-indicator .wave span:nth-child(4) { animation-delay: 0.3s; }
+
+        @keyframes wave-anim {
+            0%, 100% { transform: scaleY(0.4); }
+            50% { transform: scaleY(1); }
+        }
+
+        .tips-box {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 193, 7, 0.05);
+            border: 1px solid rgba(255, 193, 7, 0.15);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+
+        .tips-box h4 {
+            font-size: 0.8rem;
+            color: #ffc107;
+            margin-bottom: 6px;
+        }
+
+        .tips-box p {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
-    <canvas id="stars"></canvas>
-    <div class="container">
-        <h1>Cosmic Live</h1>
-        <p>Interactive Particle Theme Preview</p>
+    <div class="header">
+        <h1>🗣️ English AI Coach</h1>
+        <p>Practice speaking & improve your English</p>
+    </div>
+
+    <div class="speaking-indicator" id="speakingIndicator">
+        <div class="wave">
+            <span></span><span></span><span></span><span></span>
+        </div>
+        <span>Speaking...</span>
+    </div>
+
+    <div class="chat-container">
+        <div class="messages" id="messages">
+            <div class="message ai">
+                <div class="label">AI Coach</div>
+                Hello! I'm your English speaking coach. Type or speak a sentence and I'll help you improve it. Let's practice together! 🎯
+            </div>
+        </div>
+        <div class="input-area">
+            <button class="btn btn-mic" id="micBtn" title="Speak">🎤</button>
+            <input type="text" id="userInput" placeholder="Type or speak English..." autocomplete="off">
+            <button class="btn btn-send" id="sendBtn" title="Send">➤</button>
+        </div>
+    </div>
+
+    <div class="voice-settings">
+        <h3>🔊 Voice Settings (Fix Robotic Sound)</h3>
+        <div class="setting-row">
+            <label>Voice:</label>
+            <select id="voiceSelect"></select>
+        </div>
+        <div class="setting-row">
+            <label>Speed (Rate):</label>
+            <input type="range" id="rateSlider" min="0.5" max="1.5" step="0.05" value="0.92">
+            <span class="value-display" id="rateValue">0.92</span>
+        </div>
+        <div class="setting-row">
+            <label>Pitch:</label>
+            <input type="range" id="pitchSlider" min="0.7" max="1.4" step="0.05" value="1.0">
+            <span class="value-display" id="pitchValue">1.0</span>
+        </div>
+        <div class="setting-row">
+            <label>Volume:</label>
+            <input type="range" id="volumeSlider" min="0.3" max="1.0" step="0.05" value="0.9">
+            <span class="value-display" id="volumeValue">0.9</span>
+        </div>
+    </div>
+
+    <div class="tips-box">
+        <h4>💡 Best Voice Tips</h4>
+        <p>
+            <strong>Recommended voices (natural, not robotic):</strong><br>
+            • <b>Google UK English Female</b> – clearest & most natural<br>
+            • <b>Google US English</b> – smooth American accent<br>
+            • <b>Microsoft Zira</b> – warm female voice (Windows)<br>
+            • <b>Samantha</b> – natural iOS/Mac voice<br><br>
+            <strong>To fix robotic/flat sound:</strong><br>
+            • Rate: 0.85–0.95 (slower = more natural)<br>
+            • Pitch: 0.95–1.10 (slight variation helps)<br>
+            • Avoid rate above 1.2 (causes flutter)
+        </p>
     </div>
 
     <script>
-        const canvas = document.getElementById('stars');
-        const ctx = canvas.getContext('2d');
+        // ========== VOICE ENGINE (Web Speech API) ==========
+        const synth = window.speechSynthesis;
+        let voices = [];
+        let selectedVoice = null;
 
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
+        // Priority list: best natural-sounding voices (top = best)
+        const PREFERRED_VOICES = [
+            'Google UK English Female',
+            'Google UK English Male',
+            'Google US English',
+            'Microsoft Zira Desktop',
+            'Microsoft Zira',
+            'Samantha',              // macOS/iOS
+            'Karen',                 // Australian English
+            'Daniel',                // British English
+            'Moira',                 // Irish English
+            'Fiona',                 // Scottish
+            'Google हिन्दी',         // fallback
+            'English United Kingdom',
+            'English United States',
+        ];
 
-        const stars = [];
-        const numStars = 80;
+        function loadVoices() {
+            voices = synth.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '';
 
-        class Star {
-            constructor() {
-                this.reset();
-            }
+            // Filter English voices first, then all others
+            const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+            const otherVoices = voices.filter(v => !v.lang.startsWith('en'));
+            const sortedVoices = [...englishVoices, ...otherVoices];
 
-            reset() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.size = Math.random() * 2 + 0.5;
-                this.speedX = (Math.random() - 0.5) * 0.15;
-                this.speedY = (Math.random() - 0.5) * 0.15;
-                this.alpha = Math.random();
-                this.alphaSpeed = Math.random() * 0.01 + 0.005;
-            }
-
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.alpha += this.alphaSpeed;
-
-                if (this.alpha > 1 || this.alpha < 0) {
-                    this.alphaSpeed = -this.alphaSpeed;
+            sortedVoices.forEach((voice, i) => {
+                const option = document.createElement('option');
+                option.value = voices.indexOf(voice);
+                option.textContent = `${voice.name} (${voice.lang})`;
+                if (voice.name === 'Google UK English Female' || 
+                    voice.name === 'Google US English' ||
+                    voice.name.includes('Samantha')) {
+                    option.textContent += ' ⭐';
                 }
-
-                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
-                    this.reset();
-                }
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 229, 255, ${this.alpha})`;
-                ctx.shadowBlur = this.size * 3;
-                ctx.shadowColor = '#00e5ff';
-                ctx.fill();
-            }
-        }
-
-        // Initialize
-        for (let i = 0; i < numStars; i++) {
-            stars.push(new Star());
-        }
-
-        // Handle resize
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        });
-
-        // Touch event to spawn pulse stars
-        document.body.addEventListener('touchstart', (e) => {
-            const touch = e.touches[0];
-            for (let i = 0; i < 5; i++) {
-                const s = new Star();
-                s.x = touch.clientX;
-                s.y = touch.clientY;
-                s.size = Math.random() * 4 + 1;
-                s.speedX = (Math.random() - 0.5) * 1.5;
-                s.speedY = (Math.random() - 0.5) * 1.5;
-                s.alpha = 1;
-                stars.push(s);
-                if (stars.length > 200) stars.shift();
-            }
-        });
-
-        // Loop
-        function animate() {
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = 'rgba(11, 12, 21, 0.2)'; // trail effect
-            ctx.fillRect(0, 0, width, height);
-
-            stars.forEach(star => {
-                star.update();
-                star.draw();
+                voiceSelect.appendChild(option);
             });
 
-            requestAnimationFrame(animate);
+            // Auto-select best voice
+            selectBestVoice();
         }
 
-        animate();
+        function selectBestVoice() {
+            for (const preferred of PREFERRED_VOICES) {
+                const found = voices.find(v => v.name.includes(preferred));
+                if (found) {
+                    selectedVoice = found;
+                    const idx = voices.indexOf(found);
+                    document.getElementById('voiceSelect').value = idx;
+                    console.log('✅ Selected best voice:', found.name);
+                    return;
+                }
+            }
+            // Fallback: first English voice
+            const fallback = voices.find(v => v.lang.startsWith('en'));
+            if (fallback) {
+                selectedVoice = fallback;
+                document.getElementById('voiceSelect').value = voices.indexOf(fallback);
+            }
+        }
+
+        // Voices load asynchronously in Chrome/Android WebView
+        if (synth.onvoiceschanged !== undefined) {
+            synth.onvoiceschanged = loadVoices;
+        }
+        // Also try immediately (for Firefox/Safari)
+        setTimeout(loadVoices, 100);
+        setTimeout(loadVoices, 500);
+
+        document.getElementById('voiceSelect').addEventListener('change', (e) => {
+            selectedVoice = voices[parseInt(e.target.value)];
+        });
+
+        // ========== SPEAK FUNCTION (FIXES ROBOTIC + FLUTTER) ==========
+        function speak(text) {
+            if (!synth || !text) return;
+
+            // CRITICAL FIX: Cancel any ongoing speech to prevent overlap/flutter
+            synth.cancel();
+
+            const indicator = document.getElementById('speakingIndicator');
+            indicator.classList.add('active');
+
+            // Split long text into chunks to prevent Android WebView cutting off
+            const chunks = splitTextIntoChunks(text, 150);
+            let chunkIndex = 0;
+
+            function speakNextChunk() {
+                if (chunkIndex >= chunks.length) {
+                    indicator.classList.remove('active');
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(chunks[chunkIndex]);
+
+                // Apply voice settings
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+                utterance.rate = parseFloat(document.getElementById('rateSlider').value);
+                utterance.pitch = parseFloat(document.getElementById('pitchSlider').value);
+                utterance.volume = parseFloat(document.getElementById('volumeSlider').value);
+
+                // FIX FOR ROBOTIC SOUND: Add slight natural pauses between words
+                // by using a moderate rate and avoiding max pitch
+                utterance.rate = Math.max(0.5, Math.min(utterance.rate, 1.5));
+                utterance.pitch = Math.max(0.7, Math.min(utterance.pitch, 1.4));
+
+                utterance.onend = () => {
+                    chunkIndex++;
+                    // Small pause between chunks for natural flow
+                    setTimeout(speakNextChunk, 180);
+                };
+
+                utterance.onerror = (e) => {
+                    console.error('Speech error:', e);
+                    indicator.classList.remove('active');
+                };
+
+                // CRITICAL FIX: Chrome/Android bug - speech stops after ~15 seconds
+                // Workaround: resume periodically
+                let resumeTimer = setInterval(() => {
+                    if (synth.speaking && !synth.paused) {
+                        synth.pause();
+                        synth.resume();
+                    }
+                }, 10000);
+
+                utterance.onend = () => {
+                    clearInterval(resumeTimer);
+                    chunkIndex++;
+                    setTimeout(speakNextChunk, 180);
+                };
+
+                utterance.onerror = () => {
+                    clearInterval(resumeTimer);
+                    indicator.classList.remove('active');
+                };
+
+                synth.speak(utterance);
+            }
+
+            speakNextChunk();
+        }
+
+        // Split text into natural chunks at sentence boundaries
+        function splitTextIntoChunks(text, maxLen) {
+            const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+            const chunks = [];
+            let current = '';
+
+            for (const sentence of sentences) {
+                if ((current + sentence).length > maxLen && current.length > 0) {
+                    chunks.push(current.trim());
+                    current = sentence;
+                } else {
+                    current += sentence;
+                }
+            }
+            if (current.trim()) {
+                chunks.push(current.trim());
+            }
+            return chunks.length > 0 ? chunks : [text];
+        }
+
+        // ========== AI ENGLISH COACH LOGIC ==========
+        function getAIResponse(userText) {
+            const text = userText.trim().toLowerCase();
+            const original = userText.trim();
+
+            // Grammar corrections
+            const corrections = checkGrammar(original);
+            if (corrections) return corrections;
+
+            // Conversation responses
+            if (text.match(/^(hi|hello|hey|helo|hii)/)) {
+                return "Hello! Great to see you practicing! Try saying: 'Hello, how are you doing today?' — This sounds more natural and polite. Want to practice greetings?";
+            }
+            if (text.match(/how are you|how r you/)) {
+                return "I'm doing great, thank you for asking! A perfect response would be: 'I'm doing well, thank you. How about you?' — Notice we say 'doing well' not 'doing good' in formal English.";
+            }
+            if (text.match(/what is your name|your name/)) {
+                return "I'm your English AI Coach! By the way, the correct way to ask is: 'What is your name?' or more casually 'What's your name?' — Both are perfect!";
+            }
+            if (text.match(/thank|thanks/)) {
+                return "You're welcome! Here are natural ways to say thanks: 'Thank you so much!', 'I really appreciate it!', 'Thanks a lot!' — Try using different ones each time!";
+            }
+            if (text.match(/help me|i need help|practice/)) {
+                return "Of course! Here are some practice ideas: 1) Describe your day in 3 sentences. 2) Tell me about your hobby. 3) Ask me any question in English. Which would you like to try?";
+            }
+            if (text.match(/weather|sunny|rain/)) {
+                return "Great topic! Here's a natural weather sentence: 'It looks like it might rain today, so I'll bring an umbrella.' — Try describing today's weather in your area!";
+            }
+            if (text.match(/food|eat|hungry|lunch|dinner/)) {
+                return "Food vocabulary is so useful! Try saying: 'I'd like to have pasta for dinner tonight.' — Notice we use 'I'd like to' instead of 'I want' for politeness. What's your favorite food?";
+            }
+
+            // Default: provide feedback on their sentence
+            return provideFeedback(original);
+        }
+
+        function checkGrammar(text) {
+            // Common grammar mistakes
+            const fixes = [
+                { pattern: /\bi am go\b/i, fix: "I am going", tip: "Use 'going' (present continuous) when talking about current actions." },
+                { pattern: /\bhe don't\b/i, fix: "he doesn't", tip: "With he/she/it, use 'doesn't' not 'don't'." },
+                { pattern: /\bshe don't\b/i, fix: "she doesn't", tip: "With he/she/it, use 'doesn't' not 'don't'." },
+                { pattern: /\bmore better\b/i, fix: "better", tip: "'Better' already means 'more good' — don't add 'more' before it!" },
+                { pattern: /\bmore faster\b/i, fix: "faster", tip: "'Faster' already means 'more fast' — no need for 'more'!" },
+                { pattern: /\bi doesn't\b/i, fix: "I don't", tip: "With 'I', always use 'don't', not 'doesn't'." },
+                { pattern: /\bcan able to\b/i, fix: "can / am able to", tip: "Use either 'can' or 'am able to', not both together." },
+                { pattern: /\byesterday i go\b/i, fix: "Yesterday I went", tip: "For past events, use past tense: 'went' not 'go'." },
+                { pattern: /\bi has\b/i, fix: "I have", tip: "With 'I', always use 'have', not 'has'. 'Has' is for he/she/it." },
+                { pattern: /\bhe have\b/i, fix: "he has", tip: "With 'he/she/it', use 'has' not 'have'." },
+                { pattern: /\bmyself name\b/i, fix: "My name is", tip: "Say 'My name is...' not 'Myself name'. 'Myself' is reflexive." },
+                { pattern: /\bi am have\b/i, fix: "I have", tip: "Don't combine 'am' with 'have'. Just say 'I have'." },
+                { pattern: /\bwhere i can\b/i, fix: "Where can I", tip: "In questions, put 'can' before 'I': 'Where can I find...?'" },
+            ];
+
+            for (const rule of fixes) {
+                if (rule.pattern.test(text)) {
+                    return `📝 Correction: "${text.replace(rule.pattern, '**' + rule.fix + '**')}"
+
+✅ Correct: "${rule.fix}"
+💡 Tip: ${rule.tip}
+
+Try saying the corrected sentence out loud!`;
+                }
+            }
+            return null;
+        }
+
+        function provideFeedback(text) {
+            if (text.length < 5) {
+                return "Try writing a complete sentence! For example: 'I want to learn English because it helps me communicate with more people.' — The more you practice, the better you'll get!";
+            }
+
+            if (text.length > 5 && text.length < 20) {
+                return `Good start! You said: "${text}" — Now try expanding it into a longer sentence. Add details like when, where, or why. For example, instead of 'I like books', say 'I like reading mystery books before bedtime.'`;
+            }
+
+            // Encourage and offer vocabulary
+            const responses = [
+                `Nice sentence! "${text}" — Here's a more advanced way to say it: Try using words like 'however', 'moreover', or 'furthermore' to connect your ideas. Would you like vocabulary tips?`,
+                `Good effort! Your sentence structure is improving. Remember: Subject + Verb + Object is the basic English pattern. Try rephrasing your sentence starting with 'I believe that...' for a more formal tone.`,
+                `Well done! Practice makes perfect. Try saying your sentence with different emotions — happy, serious, curious. This helps with natural intonation. Want to try another topic?`,
+                `Great practice! Here's a challenge: Can you ask me a question using 'Would you mind...?' or 'Could you please...?' These are very polite English patterns used in daily conversation.`,
+            ];
+
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        // ========== UI INTERACTIONS ==========
+        const messagesDiv = document.getElementById('messages');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const micBtn = document.getElementById('micBtn');
+
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerHTML = `<div class="label">${type === 'ai' ? 'AI Coach' : 'You'}</div>${text}`;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            addMessage(text, 'user');
+            userInput.value = '';
+
+            // Small delay for natural feel
+            setTimeout(() => {
+                const response = getAIResponse(text);
+                addMessage(response, 'ai');
+                // Auto-speak the response
+                speak(response.replace(/[📝✅💡🎯\*\*]/g, '').replace(/\n/g, '. '));
+            }, 400);
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSend();
+        });
+
+        // ========== SPEECH RECOGNITION (Mic Button) ==========
+        let recognition = null;
+        let isListening = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                handleSend();
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('listening');
+                micBtn.textContent = '🎤';
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                isListening = false;
+                micBtn.classList.remove('listening');
+                micBtn.textContent = '🎤';
+            };
+        }
+
+        micBtn.addEventListener('click', () => {
+            if (!recognition) {
+                addMessage("Speech recognition is not supported in this browser. Please type your message instead.", 'ai');
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+                isListening = false;
+                micBtn.classList.remove('listening');
+                micBtn.textContent = '🎤';
+            } else {
+                // Stop any ongoing speech before listening
+                synth.cancel();
+                recognition.start();
+                isListening = true;
+                micBtn.classList.add('listening');
+                micBtn.textContent = '⏹';
+            }
+        });
+
+        // ========== SLIDER UPDATES ==========
+        document.getElementById('rateSlider').addEventListener('input', (e) => {
+            document.getElementById('rateValue').textContent = e.target.value;
+        });
+        document.getElementById('pitchSlider').addEventListener('input', (e) => {
+            document.getElementById('pitchValue').textContent = e.target.value;
+        });
+        document.getElementById('volumeSlider').addEventListener('input', (e) => {
+            document.getElementById('volumeValue').textContent = e.target.value;
+        });
+
+        // ========== INITIAL GREETING SPEECH ==========
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                speak("Hello! I'm your English speaking coach. Type or speak a sentence and I'll help you improve it. Let's practice together!");
+            }, 1500);
+        });
     </script>
 </body>
 </html>
